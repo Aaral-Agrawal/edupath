@@ -83,7 +83,7 @@ class Token(BaseModel):
 class StudentProfile(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
-    academic_level: str  # 10th, 12th, Graduate, etc.
+    academic_level: str = "Not specified"  # 10th, 12th, Graduate, etc.
     subjects: List[str] = []
     interests: List[str] = []
     career_goals: List[str] = []
