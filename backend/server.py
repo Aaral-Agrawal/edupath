@@ -352,7 +352,8 @@ async def get_career_recommendations(
 @api_router.get("/career/recommendations/history")
 async def get_recommendation_history(current_user: User = Depends(get_current_user)):
     recommendations = await db.career_recommendations.find(
-        {"user_id": current_user.id}
+        {"user_id": current_user.id},
+        {"_id": 0}  # Exclude MongoDB _id field
     ).sort("created_at", -1).to_list(10)
     
     return recommendations
