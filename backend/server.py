@@ -363,7 +363,10 @@ async def get_student_profile(current_user: User = Depends(get_current_user)):
     if current_user.role != UserRole.STUDENT:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    profile = await db.student_profiles.find_one({"user_id": current_user.id})
+    profile = await db.student_profiles.find_one(
+        {"user_id": current_user.id},
+        {"_id": 0}  # Exclude MongoDB _id field
+    )
     return profile
 
 @api_router.put("/profile/student")
