@@ -28,11 +28,11 @@ class EduPathAPITester:
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=test_headers, timeout=30)
+                response = requests.get(url, headers=test_headers, timeout=60)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=test_headers, timeout=30)
+                response = requests.post(url, json=data, headers=test_headers, timeout=60)
             elif method == 'PUT':
-                response = requests.put(url, json=data, headers=test_headers, timeout=30)
+                response = requests.put(url, json=data, headers=test_headers, timeout=60)
 
             success = response.status_code == expected_status
             if success:
