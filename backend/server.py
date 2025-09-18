@@ -12,16 +12,24 @@ import uuid
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 import bcrypt
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from fastapi import FastAPI, HTTPException, Form
+from dotenv import load_dotenv
+import os
+import openai
 import json
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+# MongoDB connection (use global URI from .env)
+mongo_url = os.getenv('MONGO_URL')
+db_name = os.getenv('DB_NAME')
+
+if not mongo_url or not db_name:
+    raise RuntimeError("MONGO_URL or DB_NAME not set in .env file")
+
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[db_name]
 
 # Create the main app without a prefix
 app = FastAPI(title="EduPath API", description="Career & Education Advisory Platform", version="1.0.0")
@@ -521,8 +529,8 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend origin
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -537,3 +545,16 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+@app.post("/chat")
+async def chat(prompt: str = Form(...)):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return {"response": response.choices[0].message["content"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
